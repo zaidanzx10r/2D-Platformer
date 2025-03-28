@@ -3,72 +3,76 @@ using UnityEngine.InputSystem;
 
 public class PlayerController : MonoBehaviour
 {
-    private InputActions inputActions;
-    private Vector2 moveInput;
-    
-
     public float walkSpeed = 5f;
     public float sprintSpeed = 10f;
-    private float currentSpeed;
-    private bool isSprinting = false;
-
     public float jumpForce = 8f;
-    private bool isGrounded;
-    
-    
+    private float currentSpeed;
+
+    private bool isGrounded = false;
+
     private Rigidbody2D rb;
+
+    [SerializeField] public float raycastDistance = 0.3f;
+
+    private InputActions controls;
 
     private void Awake()
     {
         rb = GetComponent<Rigidbody2D>();
+        controls = new InputActions();
     }
 
-    public void OnMove(InputAction.CallbackContext context)
+    private void OnEnable()
     {
-        moveInput = context.ReadValue<Vector2>();
+        controls.Enable();
     }
 
-    public void OnJump(InputAction.CallbackContext context)
+    private void OnDisable()
     {
-        if (isGrounded)
-        {
-            rb.linearVelocity = new Vector2(rb.linearVelocity.x, jumpForce);
-            isGrounded = false;
-        }
+        controls.Disable();
     }
 
-    public void OnSprint(InputAction.CallbackContext context)
+    private void Update()
     {
-        if (isGrounded)
-        {
-            isSprinting = true;
-        }
-    }
-
-    public void OnSprintStop(InputAction.CallbackContext context)
-    {
-        isSprinting = false;
+        Movement();
+        Sprint();
+        Jump();
     }
 
     private void FixedUpdate()
     {
-        currentSpeed = isSprinting ? sprintSpeed : walkSpeed;
-        rb.linearVelocity = new Vector2(moveInput.x * currentSpeed, rb.linearVelocity.y);
+        // Adjust Raycast origin to bottom of player
+        Vector3 raycastOrigin = transform.position + Vector3.down * (GetComponent<Collider2D>().bounds.extents.y);
+
+        // Perform Raycast and check if the collider has the "Ground" tag
+        RaycastHit2D hit = Physics2D.Raycast(raycastOrigin, Vector2.down, raycastDistance);
+        isGrounded = hit.collider != null && hit.collider.CompareTag("Ground");
     }
 
-    private void OnCollisionEnter2D(Collision2D collision)
+    private void Movement()
     {
-        if (collision.gameObject.CompareTag("Ground"))
+        Vector2 input = controls.Player.Move.ReadValue<Vector2>();
+        rb.velocity = new Vector2(input.x * currentSpeed, rb.velocity.y);
+    }
+
+    private void Jump()
+    {
+        if (controls.Player.Jump.IsPressed() && isGrounded)
         {
-            isGrounded = true;
+            rb.velocity = new Vector2(rb.velocity.x, jumpForce);
         }
     }
 
-    private void OnCollisionExit2D(Collision2D collision)
+    private void Sprint()
     {
-        if (collision.gameObject.CompareTag("Ground"))
-        {
-            isGrounded = false;
-        }
+        currentSpeed = controls.Player.Run.IsPressed() ? sprintSpeed : walkSpeed;
+    }
+
+    private void OnDrawGizmos()
+    {
+        // Visualize the raycast for debugging
+        Gizmos.color = Color.red;
+        Vector3 raycastOrigin = transform.position + Vector3.down * (GetComponent<Collider2D>().bounds.extents.y);
+        Gizmos.DrawLine(raycastOrigin, raycastOrigin + Vector3.down * raycastDistance);
     }
 }

@@ -11,6 +11,11 @@ public class PanelManager : MonoBehaviour
 
     private void Start()
     {
+        if (introPanel == null)
+        {
+            instructionPanel.SetActive(true);
+        }
+
         rb.constraints = RigidbodyConstraints2D.FreezeAll;
         // Show the intro panel at the start
         introPanel.SetActive(true);

@@ -3,6 +3,7 @@ using UnityEngine.SceneManagement;
 
 public class ButtonManager : MonoBehaviour
 {
+    public GameObject pauseMenu;
     public void PlayButton()
     {
         // Continues to Game scene
@@ -50,5 +51,16 @@ public class ButtonManager : MonoBehaviour
     public void BackButton()
     {
         SceneManager.LoadScene("MainMenu");
+    }
+
+    public void RestartButton()
+    {
+        SceneManager.LoadScene(SceneManager.GetActiveScene().name);
+    }
+
+    public void ResumeButton()
+    {
+        pauseMenu.SetActive(false);
+        Time.timeScale = 1.0f;
     }
 }

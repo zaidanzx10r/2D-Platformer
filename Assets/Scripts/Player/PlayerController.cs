@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
+using UnityEngine.Windows;
 
 public class PlayerController : MonoBehaviour
 {
@@ -11,8 +12,9 @@ public class PlayerController : MonoBehaviour
     private bool isGrounded = false;
 
     private Rigidbody2D rb;
+    private SpriteRenderer sprite;
 
-    [SerializeField] public float raycastDistance = 0.3f;
+    [SerializeField] public float raycastDistance = 0.5f;
 
     private InputActions controls;
 
@@ -20,6 +22,7 @@ public class PlayerController : MonoBehaviour
     {
         rb = GetComponent<Rigidbody2D>();
         controls = new InputActions();
+        sprite = GetComponent<SpriteRenderer>();
     }
 
     private void OnEnable()
@@ -37,11 +40,12 @@ public class PlayerController : MonoBehaviour
         Movement();
         Sprint();
         Jump();
+        FlipSprite();
     }
 
     private void FixedUpdate()
     {
-        // Adjust Raycast origin to bottom of player
+        // Adjust Raycast to the bottom of the player
         Vector3 raycastOrigin = transform.position + Vector3.down * (GetComponent<Collider2D>().bounds.extents.y);
 
         // Perform Raycast and check if the collider has the "Ground" tag
@@ -66,6 +70,21 @@ public class PlayerController : MonoBehaviour
     private void Sprint()
     {
         currentSpeed = controls.Player.Run.IsPressed() ? sprintSpeed : walkSpeed;
+    }
+
+    private void FlipSprite()
+    {
+        Vector2 input = controls.Player.Move.ReadValue<Vector2>();
+
+        // Flip the sprite using SpriteRenderer
+        if (input.x > 0)
+        {
+            sprite.flipX = false; // Facing right
+        }
+        else if (input.x < 0)
+        {
+            sprite.flipX = true; // Facing left
+        }
     }
 
     private void OnDrawGizmos()

@@ -56,14 +56,14 @@ public class PlayerController : MonoBehaviour
     private void Movement()
     {
         Vector2 input = controls.Player.Move.ReadValue<Vector2>();
-        rb.velocity = new Vector2(input.x * currentSpeed, rb.velocity.y);
+        rb.linearVelocity = new Vector2(input.x * currentSpeed, rb.linearVelocity.y);
     }
 
     private void Jump()
     {
         if (controls.Player.Jump.IsPressed() && isGrounded)
         {
-            rb.velocity = new Vector2(rb.velocity.x, jumpForce);
+            rb.linearVelocity = new Vector2(rb.linearVelocity.x, jumpForce);
         }
     }
 
